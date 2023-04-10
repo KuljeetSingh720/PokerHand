@@ -1,0 +1,87 @@
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.metrics import accuracy_score
+from sklearn.model_selection import GridSearchCV
+
+# Load the dataset
+url = 'https://archive.ics.uci.edu/ml/machine-learning-databases/poker/poker-hand-training-true.data'
+names = ['Suit 1', 'Rank 1', 'Suit 2', 'Rank 2', 'Suit 3', 'Rank 3', 'Suit 4', 'Rank 4', 'Suit 5', 'Rank 5', 'Hand']
+df = pd.read_csv(url, names=names)
+
+# Split the data into training and test sets
+X = df.drop('Hand', axis=1)
+y = df['Hand']
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# CART model
+cart = DecisionTreeClassifier(random_state=42)
+
+# Hyperparameter tuning
+param_grid = {
+    'criterion': ['gini', 'entropy'],
+    'splitter': ['best', 'random'],
+    'max_depth': [None, 5, 10, 15, 20],
+    'min_samples_split': [2, 5, 10],
+    'min_samples_leaf': [1, 2, 4],
+    'max_features': [None, 'sqrt', 'log2']
+}
+cart_grid = GridSearchCV(cart, param_grid, cv=5)
+cart_grid.fit(X_train, y_train)
+
+# Best hyperparameters
+print("Best hyperparameters for CART:", cart_grid.best_params_)
+
+# Predicting the target values for the test set
+cart_pred = cart_grid.predict(X_test)
+cart_acc = accuracy_score(y_test, cart_pred)
+
+# Evaluating the model
+print("CART Accuracy:", cart_acc)
+
+
+# Decision Tree model
+dt = DecisionTreeClassifier(random_state=42)
+
+# Hyperparameter tuning
+param_grid = {
+    'criterion': ['gini', 'entropy'],
+    'max_depth': [3, 5, 7, 9, 11],
+    'min_samples_split': [2, 4, 6, 8, 10],
+    'min_samples_leaf': [1, 2, 3, 4, 5]
+}
+dt_grid = GridSearchCV(dt, param_grid, cv=5)
+dt_grid.fit(X_train, y_train)
+
+# Best hyperparameters
+print("Best hyperparameters for Decision Tree:", dt_grid.best_params_)
+
+# Predicting the target values for the test set
+dt_pred = dt_grid.predict(X_test)
+dt_acc = accuracy_score(y_test, dt_pred)
+
+# Evaluating the model
+print("Decision Tree Accuracy:", dt_acc)
+
+
+# Logistic Regression model
+logreg = LogisticRegression(random_state=42, max_iter=1000)
+
+# Hyperparameter tuning
+param_grid = {
+    'C': [0.01, 0.1, 1.0, 10.0],
+    'penalty': ['l1', 'l2'],
+    'solver': ['liblinear', 'saga'],
+}
+logreg_grid = GridSearchCV(logreg, param_grid, cv=5)
+logreg_grid.fit(X_train, y_train)
+
+# Best hyperparameters
+print("Best hyperparameters for Logistic Regression:", logreg_grid.best_params_)
+
+# Predicting the target values for the test set
+logreg_pred = logreg_grid.predict(X_test)
+logreg_acc = accuracy_score(y_test, logreg_pred)
+
+# Evaluating the model
+print("Logistic Regression Accuracy:", logreg_acc)
